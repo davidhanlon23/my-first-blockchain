@@ -1,47 +1,44 @@
 # Module 1 - Create a Blockchain
-
-# To be installed:
-# Flask==0.12.2: pip install Flask==0.12.2
-# Postman HTTP Client: https://www.getpostman.com/
-
-# Importing the libraries
 import datetime
 import hashlib
 import json
 from flask import Flask, jsonify
 
-# Part 1 - Building a Blockchain
+# Part 1 - Building a blockchain
 
 class Blockchain:
-
+ 
     def __init__(self):
         self.chain = []
+        # genesis block - previous_hash is string b/c sha256 accepts encoded strings
         self.create_block(proof = 1, previous_hash = '0')
-
+        
     def create_block(self, proof, previous_hash):
         block = {'index': len(self.chain) + 1,
-                 'timestamp': str(datetime.datetime.now()),
+                 'timestamp': str(datetime.datetime.now()), 
                  'proof': proof,
                  'previous_hash': previous_hash}
         self.chain.append(block)
         return block
-
     def get_previous_block(self):
+        # self.chain[-1] returns the last block of the chain
         return self.chain[-1]
-
+    
+    # proof of work - should be hard to find but easy to verify
     def proof_of_work(self, previous_proof):
         new_proof = 1
         check_proof = False
         while check_proof is False:
+            # has lib requires arg to be encoded
             hash_operation = hashlib.sha256(str(new_proof**2 - previous_proof**2).encode()).hexdigest()
             if hash_operation[:4] == '0000':
                 check_proof = True
             else:
                 new_proof += 1
         return new_proof
-    
+        
     def hash(self, block):
-        encoded_block = json.dumps(block, sort_keys = True).encode()
+        encoded_block = json.dumps(block, sort_keys = True).encode() 
         return hashlib.sha256(encoded_block).hexdigest()
     
     def is_chain_valid(self, chain):
@@ -59,16 +56,19 @@ class Blockchain:
             previous_block = block
             block_index += 1
         return True
+    
+    
 
-# Part 2 - Mining our Blockchain
+# Part 2 - Mining the Blockchain
 
-# Creating a Web App
+# creating a web app with flask
 app = Flask(__name__)
+app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
 
-# Creating a Blockchain
-blockchain = Blockchain()
+# creating a blockchain
+blockchain =  Blockchain()
 
-# Mining a new block
+# mining a new block
 @app.route('/mine_block', methods = ['GET'])
 def mine_block():
     previous_block = blockchain.get_previous_block()
@@ -83,22 +83,22 @@ def mine_block():
                 'previous_hash': block['previous_hash']}
     return jsonify(response), 200
 
-# Getting the full Blockchain
+# get the full blockchain
 @app.route('/get_chain', methods = ['GET'])
 def get_chain():
     response = {'chain': blockchain.chain,
                 'length': len(blockchain.chain)}
     return jsonify(response), 200
 
-# Checking if the Blockchain is valid
+# check if the blockchain is valid
 @app.route('/is_valid', methods = ['GET'])
 def is_valid():
     is_valid = blockchain.is_chain_valid(blockchain.chain)
     if is_valid:
-        response = {'message': 'All good. The Blockchain is valid.'}
+        response = {'message': 'The blockchain is valid.'}
     else:
-        response = {'message': 'Houston, we have a problem. The Blockchain is not valid.'}
+        response = {'message': 'Blockchain is NOT valid.'}
     return jsonify(response), 200
 
-# Running the app
+# run app
 app.run(host = '0.0.0.0', port = 5000)
