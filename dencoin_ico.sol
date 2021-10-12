@@ -25,12 +25,12 @@ contract dencoin_ico {
     }
     
     // Getting the equity in Dencoins of an investor
-    function equity_in_dencoins(address investor) external constant returns (uint){
+    function equity_in_dencoins(address investor) external view returns (uint){
         return equity_dencoins[investor];
     }
     
     // Getting the equity in USD of an investor
-    function equity_in_usd(address investor) external constant returns (uint){
+    function equity_in_usd(address investor) external view returns (uint){
         return equity_usd[investor];
     }
     
